@@ -52,6 +52,24 @@ public class UI {
         g2.setColor(Color.RED);
         g2.fillRect(qteBarX, 300, 15, 50);
     }
+
+    public void drawDefenseQTE(Graphics2D g2, int qteBarX) {
+        // วาดกรอบนอก
+        g2.setColor(Color.DARK_GRAY);
+        g2.fillRect(400, 300, 500, 50);
+
+        // วาดโซน Dodge (ใหญ่ / สีฟ้า)
+        g2.setColor(Color.CYAN);
+        g2.fillRect(600, 300, 200, 50);
+
+        // วาดโซน Parry (เล็ก / สีเหลือง)
+        g2.setColor(Color.YELLOW);
+        g2.fillRect(680, 300, 80, 50);
+
+        // วาดแถบที่เคลื่อนที่
+        g2.setColor(Color.BLUE);
+        g2.fillRect(qteBarX, 300, 15, 50);
+    }
     
     // --- Method ใหม่: สำหรับแสดงข้อความผลลัพธ์ ---
     public void drawBattleMessage(Graphics2D g2) {
