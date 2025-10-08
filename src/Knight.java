@@ -6,12 +6,12 @@ public class Knight extends Character {
         super("Knight", 100, 25);
         
         // กำหนดค่าเริ่มต้น
-        this.x = 150;
-        this.y = 400;
+        this.x = 200;
+        this.y = 490;
         this.speed = 4;
 
         // กำหนดค่า Hitbox (x, y, width, height)
-        this.solidArea = new Rectangle(x + 48, y + 48, 50, 50);
+        this.solidArea = new Rectangle(x + 48, y + 48, 50,50);
     }
 
     public void update(KeyHandler keyH) {

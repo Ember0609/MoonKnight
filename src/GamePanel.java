@@ -178,13 +178,15 @@ public class GamePanel extends JPanel implements Runnable {
         if (gameState == playState) {
             // วาดฉากสำรวจ
             g2.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
-            g2.drawImage(knightImage, knight.x, knight.y, 150, 150, this);
-            g2.drawImage(slimeImage, slime.x, slime.y, 120, 120, this);
+            g2.drawImage(knightImage, knight.x, knight.y, 200, 200, this);
+            g2.drawImage(slimeImage, slime.x, slime.y, 200, 200, this);
         } else if (gameState == battleState) {
             // วาดฉากต่อสู้
             g2.drawImage(battleBackgroundImage, 0, 0, getWidth(), getHeight(), this);
             g2.drawString("Knight HP: " + knight.hp, 50, 50);
             g2.drawString("Slime HP: " + slime.hp, 900, 50);
+            g2.drawImage(knightImage, 200, 490, 200, 200, this);
+            g2.drawImage(slimeImage, 800, 490, 200, 200, this);
             
             if(battleSubState == playerTurn) ui.draw(g2);
             if(battleSubState == qteTurn) ui.drawAttackQTE(g2, qteBarX);
