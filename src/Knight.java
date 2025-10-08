@@ -1,30 +1,27 @@
-public class Knight extends Character {
+import java.awt.Rectangle;
 
-    public int x, y; // ตำแหน่งบนหน้าจอ
-    public int speed; // ความเร็วในการเคลื่อนที่
+public class Knight extends Character {
 
     public Knight() {
         super("Knight", 100, 25);
         
         // กำหนดค่าเริ่มต้น
-        this.x = 150; // ตำแหน่งเริ่มต้นแกน X
-        this.y = 400; // ตำแหน่งเริ่มต้นแกน Y
-        this.speed = 4; // ความเร็ว 4 pixels ต่อ frame
+        this.x = 150;
+        this.y = 400;
+        this.speed = 4;
+
+        // กำหนดค่า Hitbox (x, y, width, height)
+        this.solidArea = new Rectangle(x + 48, y + 48, 50, 50);
     }
 
     public void update(KeyHandler keyH) {
-        // อัปเดตตำแหน่งตามปุ่มที่กด
-        if (keyH.upPressed) {
-            y -= speed;
-        }
-        if (keyH.downPressed) {
-            y += speed;
-        }
-        if (keyH.leftPressed) {
-            x -= speed;
-        }
-        if (keyH.rightPressed) {
-            x += speed;
-        }
+        if (keyH.upPressed) y -= speed;
+        if (keyH.downPressed) y += speed;
+        if (keyH.leftPressed) x -= speed;
+        if (keyH.rightPressed) x += speed;
+
+        // อัปเดตตำแหน่ง Hitbox ให้เดินตามตัวละคร
+        solidArea.x = x + 48;
+        solidArea.y = y + 48;
     }
 }

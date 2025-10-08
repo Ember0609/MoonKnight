@@ -3,16 +3,16 @@ import java.awt.event.KeyListener;
 
 public class KeyHandler implements KeyListener {
 
-    public boolean upPressed, downPressed, leftPressed, rightPressed;
+    public boolean upPressed, downPressed, leftPressed, rightPressed, enterPressed ,spacePressed; // เพิ่ม enterPressed
 
+    // ... (keyTyped และ keyReleased เหมือนเดิม) ...
     @Override
-    public void keyTyped(KeyEvent e) {
-        // เราไม่ได้ใช้ method นี้
-    }
+    public void keyTyped(KeyEvent e) {}
+
 
     @Override
     public void keyPressed(KeyEvent e) {
-        int code = e.getKeyCode(); // รับรหัสของปุ่มที่ถูกกด
+        int code = e.getKeyCode();
 
         if (code == KeyEvent.VK_W || code == KeyEvent.VK_UP) {
             upPressed = true;
@@ -26,11 +26,18 @@ public class KeyHandler implements KeyListener {
         if (code == KeyEvent.VK_D || code == KeyEvent.VK_RIGHT) {
             rightPressed = true;
         }
-    }
+        if (code == KeyEvent.VK_ENTER) { // เพิ่มการเช็คปุ่ม Enter
+            enterPressed = true;
+        }
 
+         if (code == KeyEvent.VK_SPACE) { // เพิ่มการเช็คปุ่ม Spacebar
+            spacePressed = true;
+        }
+    }
+    
     @Override
     public void keyReleased(KeyEvent e) {
-        int code = e.getKeyCode(); // รับรหัสของปุ่มที่ถูกปล่อย
+         int code = e.getKeyCode();
 
         if (code == KeyEvent.VK_W || code == KeyEvent.VK_UP) {
             upPressed = false;
@@ -44,5 +51,9 @@ public class KeyHandler implements KeyListener {
         if (code == KeyEvent.VK_D || code == KeyEvent.VK_RIGHT) {
             rightPressed = false;
         }
+        if (code == KeyEvent.VK_SPACE) { // เพิ่มการเช็คการปล่อยปุ่ม Spacebar
+            spacePressed = false;
+        }
+        // เราไม่ต้องเช็ค enterReleased ในตอนนี้
     }
 }
