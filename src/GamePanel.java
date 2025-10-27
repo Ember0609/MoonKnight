@@ -246,59 +246,74 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        Graphics2D g2 = (Graphics2D) g;
+protected void paintComponent(Graphics g) {
+    super.paintComponent(g);
+    Graphics2D g2 = (Graphics2D) g;
 
-        if (gameState == playState) {
-            g2.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
-            g2.drawImage(knight.idleImage, knight.x, knight.y, 200, 200, this);
-            g2.drawImage(slimeImage, slime.x, slime.y, 200, 200, this);
-        } else if (gameState == battleState) {
-            g2.drawImage(battleBackgroundImage, 0, 0, getWidth(), getHeight(), this);
-            // -- ลบ drawString HP เก่าออก --
-            // g2.drawString("Knight HP: " + knight.hp, 50, 50);
-            // g2.drawString("Slime HP: " + slime.hp, 900, 50);
-            g2.drawImage(slimeImage, 800, 490, 200, 200, this);
+    if (gameState == playState) {
+        // --- วาดฉาก Play State ---
+        g2.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+        g2.drawImage(knight.idleImage, knight.x, knight.y, 200, 200, this);
+        g2.drawImage(slimeImage, slime.x, slime.y, 200, 200, this);
 
-            BufferedImage imageToDraw = knight.idleImage;
-            switch (knight.currentAction) {
-                case "ready":
-                    imageToDraw = knight.readyImage;
-                    break;
-                case "slashing":
-                    imageToDraw = knight.attackImage;
-                    break;
-            }
-            g2.drawImage(imageToDraw, knight.x, knight.y, 200, 200, this);
+    } else if (gameState == battleState) {
+        // --- วาดพื้นฐานของฉาก Battle State ---
+        g2.drawImage(battleBackgroundImage, 0, 0, getWidth(), getHeight(), this);
+        g2.drawImage(slimeImage, 800, 490, 200, 200, this); // วาด Slime
 
-            // --- วาด UI ตามสถานะ ---
-            if (battleSubState == playerTurn) {
-                ui.draw(g2, knight, slime); // <-- **แก้ไข: ส่ง knight และ slime ไปด้วย**
-            }
-            if (battleSubState == attackQTE) {
-                ui.draw(g2, knight, slime); // <-- วาด UI พื้นฐาน (HP Bar) ก่อน QTE
-                ui.drawAttackQTE(g2, qteBarX);
-            }
-            if (battleSubState == defenseQTE) {
-                ui.draw(g2, knight, slime); // <-- วาด UI พื้นฐาน (HP Bar) ก่อน QTE
-                ui.drawDefenseQTE(g2, qteBarX);
-            }
-            if (battleSubState == messageTurn) {
-                ui.draw(g2, knight, slime); // <-- วาด UI พื้นฐาน (HP Bar) ก่อน Message
-                ui.drawBattleMessage(g2);
-            }
+        // วาด Knight ตาม Action ปัจจุบัน
+        BufferedImage imageToDraw = knight.idleImage;
+        switch (knight.currentAction) {
+            case "ready":
+                imageToDraw = knight.readyImage;
+                break;
+            case "slashing":
+                imageToDraw = knight.attackImage;
+                break;
+        }
+        g2.drawImage(imageToDraw, knight.x, knight.y, 200, 200, this);
 
-        } else if (gameState == gameOverState) {
-            g2.setColor(Color.BLACK);
-            g2.fillRect(0, 0, getWidth(), getHeight());
-            g2.setColor(Color.WHITE);
-            g2.setFont(new Font("Arial", Font.BOLD, 80));
-            String text = knight.isAlive() ? "You Win!" : "You Lose!";
-            int textLength = (int) g2.getFontMetrics().getStringBounds(text, g2).getWidth();
-            g2.drawString(text, (getWidth() - textLength) / 2, getHeight() / 2);
+        // --- วาด HP Bars (วาดเสมอ) ---
+        ui.drawHPBar(g2, 50, 50, 400, 40, knight.hp, knight.maxHp);
+        g2.setFont(ui.arial_40);
+        g2.setColor(Color.white);
+        g2.drawString(knight.name, 50, 40);
+
+        ui.drawHPBar(g2, 830, 50, 400, 40, slime.hp, slime.maxHp);
+        g2.setFont(ui.arial_40);
+        g2.setColor(Color.white);
+        g2.drawString(slime.name, 830, 40);
+
+
+        // --- วาด UI เฉพาะตาม Battle Sub-State ---
+        if (battleSubState == playerTurn) {
+            // วาดกล่องเลือกคำสั่งเฉพาะตอน Player Turn
+            ui.drawBattleScreen(g2,knight, slime); // <--- เรียกวาด Command Box ที่นี่ที่เดียว
+        }
+        if (battleSubState == attackQTE) {
+            // ** ไม่ต้องเรียก ui.draw(...) ที่นี่ **
+            ui.drawAttackQTE(g2, qteBarX); // วาดเฉพาะ QTE Bar
+        }
+        if (battleSubState == defenseQTE) {
+            // ** ไม่ต้องเรียก ui.draw(...) ที่นี่ **
+            ui.drawDefenseQTE(g2, qteBarX); // วาดเฉพาะ QTE Bar ป้องกัน
+        }
+        if (battleSubState == messageTurn) {
+            // ** ไม่ต้องเรียก ui.draw(...) ที่นี่ **
+            ui.drawBattleMessage(g2); // วาดเฉพาะกล่องข้อความ
         }
 
-        g2.dispose();
+    } else if (gameState == gameOverState) {
+        // --- วาดฉาก Game Over ---
+        g2.setColor(Color.BLACK);
+        g2.fillRect(0, 0, getWidth(), getHeight());
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.BOLD, 80));
+        String text = knight.isAlive() ? "You Win!" : "You Lose!";
+        int textLength = (int) g2.getFontMetrics().getStringBounds(text, g2).getWidth();
+        g2.drawString(text, (getWidth() - textLength) / 2, getHeight() / 2);
     }
+
+    g2.dispose();
+}
 }
