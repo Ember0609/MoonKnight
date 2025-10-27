@@ -23,7 +23,7 @@ public class Knight extends Character {
         this.originalX = 200; // ตำแหน่งยืนปกติในฉากต่อสู้
         this.x = originalX;
         this.y = 470;
-        this.speed = 10; // เพิ่มความเร็วตอนพุ่งเข้าไป
+        this.speed = 30; // เพิ่มความเร็วตอนพุ่งเข้าไป
         this.solidArea = new Rectangle(x + 48, y + 48, 50, 50);
 
         loadKnightImages();
@@ -60,7 +60,7 @@ public class Knight extends Character {
             x -= 4;
         }
         if (keyH.rightPressed) {
-            x += 4;
+            x += 30;
         }
         solidArea.x = x + 48;
         solidArea.y = y + 48;

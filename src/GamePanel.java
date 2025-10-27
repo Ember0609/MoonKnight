@@ -80,7 +80,7 @@ public class GamePanel extends JPanel implements Runnable {
                 battleSubState = playerTurn;
 
                 knight.x = knight.originalX;
-                knight.y = 490;
+                knight.y = 470;
             }
         }
         if (gameState == battleState) {
@@ -225,13 +225,20 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     private void handleMessageTurn() {
+        // รอแสดงข้อความ 1.5 วินาที
         if (System.nanoTime() - messageDisplayTime > 1500000000) {
+            // เช็คว่ามีใครตายหรือยัง
             if (!knight.isAlive() || !slime.isAlive()) {
                 gameState = gameOverState;
             } else {
+                // --- Logic การเปลี่ยนเทิร์นที่แก้ไขใหม่ ---
                 if (ui.currentDialogue.equals("Success!") || ui.currentDialogue.equals("Miss!")) {
+                    // ถ้า Player เพิ่งโจมตีเสร็จ, เทิร์นต่อไปเป็นของ Enemy
                     battleSubState = enemyTurn;
                 } else {
+                    // ถ้า Player เพิ่งป้องกันเสร็จ (ไม่ว่าจะ Hit, Dodge, Parry)
+                    // หรือถ้า Player กด Skip (ก็จะไม่มี message Success/Miss)
+                    // เทิร์นต่อไปเป็นของ Player เสมอ
                     battleSubState = playerTurn;
                 }
             }
@@ -248,13 +255,12 @@ public class GamePanel extends JPanel implements Runnable {
             g2.drawImage(knight.idleImage, knight.x, knight.y, 200, 200, this);
             g2.drawImage(slimeImage, slime.x, slime.y, 200, 200, this);
         } else if (gameState == battleState) {
-            // ... (ส่วนวาดพื้นหลัง, HP, Slime เหมือนเดิม)
             g2.drawImage(battleBackgroundImage, 0, 0, getWidth(), getHeight(), this);
-            g2.drawString("Knight HP: " + knight.hp, 50, 50);
-            g2.drawString("Slime HP: " + slime.hp, 900, 50);
+            // -- ลบ drawString HP เก่าออก --
+            // g2.drawString("Knight HP: " + knight.hp, 50, 50);
+            // g2.drawString("Slime HP: " + slime.hp, 900, 50);
             g2.drawImage(slimeImage, 800, 490, 200, 200, this);
 
-            // --- วาด Knight ตาม Action และตำแหน่งที่เปลี่ยนไป ---
             BufferedImage imageToDraw = knight.idleImage;
             switch (knight.currentAction) {
                 case "ready":
@@ -268,20 +274,29 @@ public class GamePanel extends JPanel implements Runnable {
 
             // --- วาด UI ตามสถานะ ---
             if (battleSubState == playerTurn) {
-                ui.draw(g2);
+                ui.draw(g2, knight, slime); // <-- **แก้ไข: ส่ง knight และ slime ไปด้วย**
             }
             if (battleSubState == attackQTE) {
+                ui.draw(g2, knight, slime); // <-- วาด UI พื้นฐาน (HP Bar) ก่อน QTE
                 ui.drawAttackQTE(g2, qteBarX);
             }
             if (battleSubState == defenseQTE) {
+                ui.draw(g2, knight, slime); // <-- วาด UI พื้นฐาน (HP Bar) ก่อน QTE
                 ui.drawDefenseQTE(g2, qteBarX);
             }
             if (battleSubState == messageTurn) {
+                ui.draw(g2, knight, slime); // <-- วาด UI พื้นฐาน (HP Bar) ก่อน Message
                 ui.drawBattleMessage(g2);
             }
 
         } else if (gameState == gameOverState) {
-            // ... (เหมือนเดิม)
+            g2.setColor(Color.BLACK);
+            g2.fillRect(0, 0, getWidth(), getHeight());
+            g2.setColor(Color.WHITE);
+            g2.setFont(new Font("Arial", Font.BOLD, 80));
+            String text = knight.isAlive() ? "You Win!" : "You Lose!";
+            int textLength = (int) g2.getFontMetrics().getStringBounds(text, g2).getWidth();
+            g2.drawString(text, (getWidth() - textLength) / 2, getHeight() / 2);
         }
 
         g2.dispose();
