@@ -79,9 +79,8 @@ public class GamePanel extends JPanel implements Runnable {
                 gameState = battleState;
                 battleSubState = playerTurn;
 
-                // --- เพิ่ม 2 บรรทัดนี้เข้าไป ---
-                knight.x = knight.originalX; // สั่งให้กลับไปยืนที่ตำแหน่ง X เริ่มต้น
-                knight.y = 490; // สั่งให้กลับไปยืนที่ตำแหน่ง Y เริ่มต้น (หรือ knight.originalY)
+                knight.x = knight.originalX;
+                knight.y = 490;
             }
         }
         if (gameState == battleState) {
@@ -226,7 +225,6 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     private void handleMessageTurn() {
-        /* ... เหมือนเดิม ... */
         if (System.nanoTime() - messageDisplayTime > 1500000000) {
             if (!knight.isAlive() || !slime.isAlive()) {
                 gameState = gameOverState;
