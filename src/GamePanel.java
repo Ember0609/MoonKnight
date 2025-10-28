@@ -5,22 +5,26 @@ import javax.swing.*;
 
 public class GamePanel extends JPanel implements Runnable {
 
-    // Game States
     public int gameState;
     public final int playState = 1;
     public final int battleState = 2;
     public final int gameOverState = 3;
 
-    // Battle Sub-States
+    // Battle Sub-States (ละเอียดขึ้น)
     public int battleSubState;
-    public final int playerTurn = 0;
-    public final int movingToTarget = 1;
-    public final int attackQTE = 2;
-    public final int slashing = 3;
-    public final int returning = 4;
-    public final int enemyTurn = 5;
-    public final int defenseQTE = 6;
-    public final int messageTurn = 7;
+    public final int PLAYER_TURN_START = 0; // ผู้เล่นเลือกคำสั่ง
+    public final int PLAYER_MOVING_TO_TARGET = 1; // Knight วิ่งไปตี
+    public final int PLAYER_ATTACK_QTE = 2; // Knight กด QTE โจมตี
+    public final int PLAYER_SLASHING = 3; // Knight แสดงท่าฟัน
+    public final int PLAYER_RETURNING = 4; // Knight วิ่งกลับ
+    public final int ENEMY_TURN_START = 5; // เริ่มเทิร์นศัตรู (เตรียมตัว)
+    public final int ENEMY_MOVING_TO_TARGET = 6; // Slime วิ่งมาตี
+    public final int PLAYER_DEFENSE_QTE = 7; // ผู้เล่นกด QTE ป้องกัน
+    public final int PLAYER_DODGING_BACK = 8; // Knight ถอยหลบ
+    public final int ENEMY_ATTACK_EXECUTE = 9; // Slime โจมตี (ถ้าผู้เล่นหลบไม่สำเร็จ)
+    public final int ENEMY_RETURNING = 10; // Slime วิ่งกลับ
+    public final int PLAYER_RETURNING_FROM_DODGE = 11; // Knight กลับจากหลบ
+    public final int BATTLE_MESSAGE = 12; // แสดงข้อความผลลัพธ์
 
     KeyHandler keyH = new KeyHandler();
     Thread gameThread;
@@ -35,27 +39,24 @@ public class GamePanel extends JPanel implements Runnable {
     long messageDisplayTime;
 
     public GamePanel() {
-        // ... (Constructor เหมือนเดิม)
         this.setPreferredSize(new Dimension(1280, 720));
         this.setBackground(Color.BLACK);
         this.setDoubleBuffered(true);
         this.addKeyListener(keyH);
         this.setFocusable(true);
-        backgroundImage = new ImageIcon(getClass().getResource("Picture/Map1.png")).getImage();
+        backgroundImage = new ImageIcon(getClass().getResource("Picture/Map2.png")).getImage();
         slimeImage = new ImageIcon(getClass().getResource("Picture/Slimekung.png")).getImage();
-        battleBackgroundImage = new ImageIcon(getClass().getResource("Picture/Map1.png")).getImage();
+        battleBackgroundImage = new ImageIcon(getClass().getResource("Picture/Map2.png")).getImage();
         gameState = playState;
     }
 
     public void startGameThread() {
-        /* ... เหมือนเดิม ... */
         gameThread = new Thread(this);
         gameThread.start();
     }
 
     @Override
     public void run() {
-        /* ... Game Loop เหมือนเดิม ... */
         double drawInterval = 1000000000.0 / 60;
         double delta = 0;
         long lastTime = System.nanoTime();
@@ -77,10 +78,11 @@ public class GamePanel extends JPanel implements Runnable {
             knight.updateForWorld(keyH);
             if (knight.solidArea.intersects(slime.solidArea)) {
                 gameState = battleState;
-                battleSubState = playerTurn;
-
+                battleSubState = PLAYER_TURN_START;
                 knight.x = knight.originalX;
-                knight.y = 470;
+                knight.y = knight.originalY;
+                slime.x = slime.originalX;
+                slime.y = slime.originalY;
             }
         }
         if (gameState == battleState) {
@@ -89,36 +91,54 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
 
+    // --- จัดการ Battle State Machine ใหม่ทั้งหมด ---
     public void handleBattle() {
         switch (battleSubState) {
-            case playerTurn:
-                handlePlayerTurn();
+            case PLAYER_TURN_START:
+                handlePlayerTurnStart();
                 break;
-            case movingToTarget:
-                handleMovingToTarget();
+            case PLAYER_MOVING_TO_TARGET:
+                handlePlayerMovingToTarget();
                 break;
-            case attackQTE:
-                handleAttackQTE();
+            case PLAYER_ATTACK_QTE:
+                handlePlayerAttackQTE();
                 break;
-            case slashing:
-                handleSlashing();
+            case PLAYER_SLASHING:
+                handlePlayerSlashing();
                 break;
-            case returning:
-                handleReturning();
+            case PLAYER_RETURNING:
+                handlePlayerReturning();
                 break;
-            case enemyTurn:
-                handleEnemyTurn();
+            case ENEMY_TURN_START:
+                handleEnemyTurnStart();
                 break;
-            case defenseQTE:
-                handleDefenseQTE();
+            case ENEMY_MOVING_TO_TARGET:
+                handleEnemyMovingToTarget();
                 break;
-            case messageTurn:
-                handleMessageTurn();
+            case PLAYER_DEFENSE_QTE:
+                handlePlayerDefenseQTE();
+                break;
+            case PLAYER_DODGING_BACK:
+                handlePlayerDodgingBack();
+                break;
+            case ENEMY_ATTACK_EXECUTE:
+                handleEnemyAttackExecute();
+                break;
+            case ENEMY_RETURNING:
+                handleEnemyReturning();
+                break;
+            case PLAYER_RETURNING_FROM_DODGE:
+                handlePlayerReturningFromDodge();
+                break;
+            case BATTLE_MESSAGE:
+                handleBattleMessage();
                 break;
         }
     }
 
-    private void handlePlayerTurn() {
+    private void handlePlayerTurnStart() {
+        knight.currentAction = "idle"; // ให้แน่ใจว่าเริ่มเทิร์นด้วยท่า idle
+        slime.currentAction = "idle";
         if (keyH.upPressed) {
             ui.commandNum = 0;
             keyH.upPressed = false;
@@ -129,191 +149,246 @@ public class GamePanel extends JPanel implements Runnable {
         }
         if (keyH.enterPressed) {
             if (ui.commandNum == 0) { // Attack
-                battleSubState = movingToTarget;
+                battleSubState = PLAYER_MOVING_TO_TARGET;
             } else { // Skip
-                battleSubState = enemyTurn;
+                battleSubState = ENEMY_TURN_START;
             }
             keyH.enterPressed = false;
         }
     }
 
-    private void handleMovingToTarget() {
-        int targetX = slime.x - 100; // ตำแหน่งเป้าหมายหน้า Slime
+    private void handlePlayerMovingToTarget() {
+        int targetX = slime.x - 100;
         if (knight.x < targetX) {
             knight.x += knight.speed;
         } else {
             knight.x = targetX;
             knight.currentAction = "ready";
-            battleSubState = attackQTE;
-            qteBarX = 400; // Reset QTE bar
+            battleSubState = PLAYER_ATTACK_QTE;
+            qteBarX = 400;
         }
     }
 
-    private void handleAttackQTE() {
+    private void handlePlayerAttackQTE() {
         qteBarX += qteBarSpeed;
         if (keyH.spacePressed) {
             if (qteBarX >= 680 && qteBarX <= 760) {
-                knight.attack(slime);
+                knight.attack(slime); // ทำ Damage จริง
                 ui.currentDialogue = "Success!";
                 knight.currentAction = "slashing";
-                knight.spriteNum = 1; // เริ่มนับ frame ใหม่
+                knight.spriteNum = 1;
+                battleSubState = PLAYER_SLASHING; // ไปแสดงท่าฟัน
             } else {
                 ui.currentDialogue = "Miss!";
-                knight.currentAction = "idle"; // กลับท่ายืนเฉย
+                knight.currentAction = "idle";
+                battleSubState = PLAYER_RETURNING; // พลาด -> กลับที่เลย
             }
             keyH.spacePressed = false;
-            battleSubState = (knight.currentAction.equals("slashing")) ? slashing : returning;
+            // ไม่ไป messageTurn ทันที
         }
-        if (qteBarX > 900) {
+        if (qteBarX > 900) { // เลยโซน
             ui.currentDialogue = "Miss!";
             knight.currentAction = "idle";
-            battleSubState = returning;
+            battleSubState = PLAYER_RETURNING;
         }
     }
 
-    private void handleSlashing() {
-        // รอให้ animation ฟันเล่นจบ (สมมติว่ามี 1 frame)
-        if (knight.spriteNum > 1) { // ถ้า spriteNum ถูกนับไปถึง 2 แล้ว
-            battleSubState = returning;
+    private void handlePlayerSlashing() {
+        if (knight.spriteNum > 1) { // รอ animation จบ
+            battleSubState = PLAYER_RETURNING; // ฟันเสร็จ -> กลับที่
         }
     }
 
-    private void handleReturning() {
+    private void handlePlayerReturning() {
         if (knight.x > knight.originalX) {
             knight.x -= knight.speed;
         } else {
             knight.x = knight.originalX;
             knight.currentAction = "idle";
-            battleSubState = messageTurn;
+            battleSubState = BATTLE_MESSAGE; // กลับถึงที่ -> แสดงข้อความ
             messageDisplayTime = System.nanoTime();
         }
     }
 
-    private void handleEnemyTurn() {
-        /* ... เหมือนเดิม ... */
+    private void handleEnemyTurnStart() {
         if (slime.isAlive()) {
-            battleSubState = defenseQTE;
-            qteBarX = 400;
+            battleSubState = ENEMY_MOVING_TO_TARGET;
+            slime.currentAction = "attacking"; // สมมติว่ามี action นี้
         } else {
             gameState = gameOverState;
         }
     }
 
-    private void handleDefenseQTE() {
-        /* ... เหมือนเดิม ... */
+    private void handleEnemyMovingToTarget() {
+        int targetX = knight.x + 100; // เป้าหมายคือหน้า Knight
+        if (slime.x > targetX) {
+            slime.x -= slime.speed;
+        } else {
+            slime.x = targetX;
+            battleSubState = PLAYER_DEFENSE_QTE; // Slime มาถึง -> ผู้เล่นเตรียมป้องกัน
+            qteBarX = 400;
+        }
+    }
+
+    private void handlePlayerDefenseQTE() {
         qteBarX += qteBarSpeed;
         if (keyH.spacePressed) {
-            if (qteBarX >= 680 && qteBarX <= 760) {
+            boolean parried = (qteBarX >= 680 && qteBarX <= 760);
+            boolean dodged = (qteBarX >= 600 && qteBarX <= 800);
+
+            if (parried) {
                 ui.currentDialogue = "Parry!";
-                knight.attack(slime);
-            } else if (qteBarX >= 600 && qteBarX <= 800) {
+                knight.attack(slime); // สวนกลับ
+                knight.currentAction = "slashing";
+                knight.spriteNum = 1;
+                battleSubState = ENEMY_RETURNING; // ศัตรูกลับที่เลย
+            } else if (dodged) {
                 ui.currentDialogue = "Dodge!";
+                knight.currentAction = "dodging"; // ตั้งสถานะ Knight
+                battleSubState = PLAYER_DODGING_BACK; // Knight เริ่มถอย
             } else {
                 ui.currentDialogue = "Hit!";
-                slime.attack(knight);
+                battleSubState = ENEMY_ATTACK_EXECUTE; // ผู้เล่นโดนตี
             }
             keyH.spacePressed = false;
-            battleSubState = messageTurn;
-            messageDisplayTime = System.nanoTime();
         }
-        if (qteBarX > 900) {
+        if (qteBarX > 900) { // เลยโซน
             ui.currentDialogue = "Hit!";
-            slime.attack(knight);
-            battleSubState = messageTurn;
+            battleSubState = ENEMY_ATTACK_EXECUTE;
+        }
+    }
+
+    private void handlePlayerDodgingBack() {
+        // Knight ถอยไปตำแหน่ง dodgeTargetX
+        if (knight.x > knight.dodgeTargetX) {
+            knight.x -= knight.speed / 2; // ถอยช้ากว่าวิ่งเข้า
+        } else {
+            knight.x = knight.dodgeTargetX;
+            battleSubState = ENEMY_RETURNING; // Knight ถอยสุด -> Slime กลับ
+        }
+    }
+
+    private void handleEnemyAttackExecute() {
+        // Slime โจมตีจริง (อาจจะมี animation สั้นๆ ตรงนี้)
+        slime.attack(knight);
+        // หลังจากโจมตีเสร็จ
+        battleSubState = ENEMY_RETURNING; // Slime กลับที่
+    }
+
+    private void handleEnemyReturning() {
+        // Slime กลับไปตำแหน่ง originalX
+        if (slime.x < slime.originalX) {
+            slime.x += slime.speed;
+        } else {
+            slime.x = slime.originalX;
+            slime.currentAction = "idle";
+            // ถ้า Knight กำลังหลบอยู่ ให้ Knight เริ่มกลับด้วย
+            if (knight.currentAction.equals("dodging")) {
+                battleSubState = PLAYER_RETURNING_FROM_DODGE;
+            } else {
+                // ถ้าไม่ได้หลบ (โดนตี หรือ Parry) -> แสดงข้อความเลย
+                battleSubState = BATTLE_MESSAGE;
+                messageDisplayTime = System.nanoTime();
+            }
+        }
+    }
+
+    private void handlePlayerReturningFromDodge() {
+        // Knight กลับจากตำแหน่งหลบ มาที่ originalX
+        if (knight.x < knight.originalX) {
+            knight.x += knight.speed / 2; // กลับช้าๆ
+        } else {
+            knight.x = knight.originalX;
+            knight.currentAction = "idle";
+            battleSubState = BATTLE_MESSAGE; // กลับถึงที่ -> แสดงข้อความ
             messageDisplayTime = System.nanoTime();
         }
     }
 
-    private void handleMessageTurn() {
-        // รอแสดงข้อความ 1.5 วินาที
+    private void handleBattleMessage() {
         if (System.nanoTime() - messageDisplayTime > 1500000000) {
-            // เช็คว่ามีใครตายหรือยัง
             if (!knight.isAlive() || !slime.isAlive()) {
                 gameState = gameOverState;
             } else {
-                // --- Logic การเปลี่ยนเทิร์นที่แก้ไขใหม่ ---
-                if (ui.currentDialogue.equals("Success!") || ui.currentDialogue.equals("Miss!")) {
-                    // ถ้า Player เพิ่งโจมตีเสร็จ, เทิร์นต่อไปเป็นของ Enemy
-                    battleSubState = enemyTurn;
+                // เช็คว่า Action ล่าสุดมาจาก Player หรือ Enemy เพื่อสลับเทิร์น
+                boolean lastActionWasPlayerAttack = ui.currentDialogue.equals("Success!") || ui.currentDialogue.equals("Miss!");
+                boolean lastActionWasPlayerDefense = ui.currentDialogue.equals("Parry!") || ui.currentDialogue.equals("Dodge!") || ui.currentDialogue.equals("Hit!");
+
+                if (lastActionWasPlayerAttack) {
+                    battleSubState = ENEMY_TURN_START; // จบเทิร์นผู้เล่น -> เริ่มเทิร์นศัตรู
+                } else if (lastActionWasPlayerDefense) {
+                    battleSubState = PLAYER_TURN_START; // จบเทิร์นศัตรู -> เริ่มเทิร์นผู้เล่น
                 } else {
-                    // ถ้า Player เพิ่งป้องกันเสร็จ (ไม่ว่าจะ Hit, Dodge, Parry)
-                    // หรือถ้า Player กด Skip (ก็จะไม่มี message Success/Miss)
-                    // เทิร์นต่อไปเป็นของ Player เสมอ
-                    battleSubState = playerTurn;
+                    // กรณีอื่นๆ (เช่น Skip) อาจจะต้องปรับตามต้องการ
+                    // ปัจจุบัน Skip จะไป ENEMY_TURN_START โดยตรง ไม่ผ่าน Message
+                    battleSubState = PLAYER_TURN_START; // Default กลับไปเทิร์นผู้เล่น
                 }
             }
         }
     }
 
     @Override
-protected void paintComponent(Graphics g) {
-    super.paintComponent(g);
-    Graphics2D g2 = (Graphics2D) g;
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g;
 
-    if (gameState == playState) {
-        // --- วาดฉาก Play State ---
-        g2.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
-        g2.drawImage(knight.idleImage, knight.x, knight.y, 200, 200, this);
-        g2.drawImage(slimeImage, slime.x, slime.y, 200, 200, this);
+        if (gameState == playState) {
+            // --- วาดฉาก Play State ---
+            g2.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+            g2.drawImage(knight.idleImage, knight.x, knight.y, 200, 200, this);
+            g2.drawImage(slimeImage, slime.x, slime.y, 200, 200, this);
 
-    } else if (gameState == battleState) {
-        // --- วาดพื้นฐานของฉาก Battle State ---
-        g2.drawImage(battleBackgroundImage, 0, 0, getWidth(), getHeight(), this);
-        g2.drawImage(slimeImage, 800, 490, 200, 200, this); // วาด Slime
+        } else if (gameState == battleState) {
+            // --- วาดพื้นฐาน Battle State ---
+            g2.drawImage(battleBackgroundImage, 0, 0, getWidth(), getHeight(), this);
+            g2.drawImage(slimeImage, slime.x, slime.y, 200, 200, this); // ใช้ slime.x
 
-        // วาด Knight ตาม Action ปัจจุบัน
-        BufferedImage imageToDraw = knight.idleImage;
-        switch (knight.currentAction) {
-            case "ready":
+            // วาด Knight ตาม Action
+            BufferedImage imageToDraw = knight.idleImage;
+            if (knight.currentAction.equals("ready")) {
                 imageToDraw = knight.readyImage;
-                break;
-            case "slashing":
+            }
+            if (knight.currentAction.equals("slashing")) {
                 imageToDraw = knight.attackImage;
-                break;
-        }
-        g2.drawImage(imageToDraw, knight.x, knight.y, 200, 200, this);
+            }
+            // อาจจะเพิ่มท่า dodging ถ้ามี sprite
+            g2.drawImage(imageToDraw, knight.x, knight.y, 200, 200, this); // ใช้ knight.x
 
-        // --- วาด HP Bars (วาดเสมอ) ---
-        ui.drawHPBar(g2, 50, 50, 400, 40, knight.hp, knight.maxHp);
-        g2.setFont(ui.arial_40);
-        g2.setColor(Color.white);
-        g2.drawString(knight.name, 50, 40);
+            // วาด HP Bars
+            ui.drawHPBar(g2, 50, 50, 400, 40, knight.hp, knight.maxHp);
+            g2.setFont(ui.arial_40);
+            g2.setColor(Color.white);
+            g2.drawString(knight.name, 50, 40);
+            ui.drawHPBar(g2, 830, 50, 400, 40, slime.hp, slime.maxHp);
+            g2.setFont(ui.arial_40);
+            g2.setColor(Color.white);
+            g2.drawString(slime.name, 830, 40);
 
-        ui.drawHPBar(g2, 830, 50, 400, 40, slime.hp, slime.maxHp);
-        g2.setFont(ui.arial_40);
-        g2.setColor(Color.white);
-        g2.drawString(slime.name, 830, 40);
+            // --- วาด UI เฉพาะตาม Sub-State ---
+            if (battleSubState == PLAYER_TURN_START) {
+                ui.drawBattleScreen(g2, knight, slime);
+            }
+            if (battleSubState == PLAYER_ATTACK_QTE) {
+                ui.drawAttackQTE(g2, qteBarX);
+            }
+            if (battleSubState == PLAYER_DEFENSE_QTE) {
+                ui.drawDefenseQTE(g2, qteBarX);
+            }
+            if (battleSubState == BATTLE_MESSAGE) {
+                ui.drawBattleMessage(g2);
+            }
 
-
-        // --- วาด UI เฉพาะตาม Battle Sub-State ---
-        if (battleSubState == playerTurn) {
-            // วาดกล่องเลือกคำสั่งเฉพาะตอน Player Turn
-            ui.drawBattleScreen(g2,knight, slime); // <--- เรียกวาด Command Box ที่นี่ที่เดียว
-        }
-        if (battleSubState == attackQTE) {
-            // ** ไม่ต้องเรียก ui.draw(...) ที่นี่ **
-            ui.drawAttackQTE(g2, qteBarX); // วาดเฉพาะ QTE Bar
-        }
-        if (battleSubState == defenseQTE) {
-            // ** ไม่ต้องเรียก ui.draw(...) ที่นี่ **
-            ui.drawDefenseQTE(g2, qteBarX); // วาดเฉพาะ QTE Bar ป้องกัน
-        }
-        if (battleSubState == messageTurn) {
-            // ** ไม่ต้องเรียก ui.draw(...) ที่นี่ **
-            ui.drawBattleMessage(g2); // วาดเฉพาะกล่องข้อความ
+        } else if (gameState == gameOverState) {
+            // --- วาดฉาก Game Over ---
+            g2.setColor(Color.BLACK);
+            g2.fillRect(0, 0, getWidth(), getHeight());
+            g2.setColor(Color.WHITE);
+            g2.setFont(new Font("Arial", Font.BOLD, 80));
+            String text = knight.isAlive() ? "You Win!" : "You Lose!";
+            int textLength = (int) g2.getFontMetrics().getStringBounds(text, g2).getWidth();
+            g2.drawString(text, (getWidth() - textLength) / 2, getHeight() / 2);
         }
 
-    } else if (gameState == gameOverState) {
-        // --- วาดฉาก Game Over ---
-        g2.setColor(Color.BLACK);
-        g2.fillRect(0, 0, getWidth(), getHeight());
-        g2.setColor(Color.WHITE);
-        g2.setFont(new Font("Arial", Font.BOLD, 80));
-        String text = knight.isAlive() ? "You Win!" : "You Lose!";
-        int textLength = (int) g2.getFontMetrics().getStringBounds(text, g2).getWidth();
-        g2.drawString(text, (getWidth() - textLength) / 2, getHeight() / 2);
+        g2.dispose();
     }
-
-    g2.dispose();
-}
 }

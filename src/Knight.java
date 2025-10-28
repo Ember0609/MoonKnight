@@ -6,26 +6,22 @@ import javax.imageio.ImageIO;
 
 public class Knight extends Character {
 
-    // Animation Images
     public BufferedImage idleImage, readyImage, attackImage;
-    public String currentAction = "idle";
-
-    // Animation Timers
+    public String currentAction = "idle"; // idle, ready, slashing, dodging
     public int spriteCounter = 0;
     public int spriteNum = 1;
-
-    // Position Memory
-    public int originalX;
+    public int originalX, originalY; // <-- เพิ่ม originalY
+    public int dodgeTargetX; // ตำแหน่ง X ตอนถอยหลบ
 
     public Knight() {
         super("Knight", 100, 25);
-
-        this.originalX = 200; // ตำแหน่งยืนปกติในฉากต่อสู้
+        this.originalX = 200;
+        this.originalY = 470; // <-- เก็บตำแหน่ง Y เริ่มต้น
+        this.dodgeTargetX = originalX - 80; // <-- ถอยไป 80 pixels
         this.x = originalX;
-        this.y = 470;
-        this.speed = 30; // เพิ่มความเร็วตอนพุ่งเข้าไป
+        this.y = originalY; // <-- ใช้ originalY
+        this.speed = 30;
         this.solidArea = new Rectangle(x + 48, y + 48, 50, 50);
-
         loadKnightImages();
     }
 

@@ -1,6 +1,8 @@
+
 import java.awt.*;
 
 public class UI {
+
     Font arial_40;
     public int commandNum = 0; // 0 = Attack, 1 = Skip
     public String currentDialogue = "";
@@ -14,7 +16,9 @@ public class UI {
         // คำนวณความกว้างของแถบเลือดปัจจุบัน
         double hpPercentage = (double) currentHP / maxHP;
         // ป้องกันกรณี currentHP เป็น 0 หรือติดลบ ทำให้ hpPercentage ไม่ถูกต้อง
-        if (hpPercentage < 0) hpPercentage = 0;
+        if (hpPercentage < 0) {
+            hpPercentage = 0;
+        }
         int currentHPBarWidth = (int) (width * hpPercentage);
 
         // วาดกรอบนอก (สีเทาเข้ม)
@@ -33,7 +37,7 @@ public class UI {
         // (ทางเลือก) แสดงตัวเลข HP บนหลอดเลือด
         g2.setFont(g2.getFont().deriveFont(Font.BOLD, 20F));
         String hpText = currentHP + "/" + maxHP;
-        int textX = x + width / 2 - (int)(g2.getFontMetrics().getStringBounds(hpText, g2).getWidth() / 2);
+        int textX = x + width / 2 - (int) (g2.getFontMetrics().getStringBounds(hpText, g2).getWidth() / 2);
         int textY = y + height / 2 + 7; // ปรับตำแหน่ง Y ให้ดูดี
         g2.setColor(Color.WHITE);
         g2.drawString(hpText, textX, textY);
@@ -53,9 +57,13 @@ public class UI {
         g2.setFont(arial_40);
         g2.setColor(Color.white);
         g2.drawString("Attack", 75, 560);
-        if (commandNum == 0) g2.drawString(">", 50, 560);
+        if (commandNum == 0) {
+            g2.drawString(">", 50, 560);
+        }
         g2.drawString("Skip", 75, 610);
-        if (commandNum == 1) g2.drawString(">", 50, 610);
+        if (commandNum == 1) {
+            g2.drawString(">", 50, 610);
+        }
     }
 
     // --- drawAttackQTE เหมือนเดิม ---
@@ -86,7 +94,7 @@ public class UI {
         g2.fillRoundRect(400, 200, 500, 150, 35, 35);
         g2.setColor(Color.white);
         g2.setFont(g2.getFont().deriveFont(Font.BOLD, 50F));
-        int textLength = (int)g2.getFontMetrics().getStringBounds(currentDialogue, g2).getWidth();
+        int textLength = (int) g2.getFontMetrics().getStringBounds(currentDialogue, g2).getWidth();
         g2.drawString(currentDialogue, 640 - (textLength / 2), 290);
     }
 }
