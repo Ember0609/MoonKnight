@@ -1,8 +1,6 @@
-
 import java.awt.*;
 
 public class UI {
-
     Font arial_40;
     public int commandNum = 0; // 0 = Attack, 1 = Skip
     public String currentDialogue = "";
@@ -13,57 +11,52 @@ public class UI {
 
     // --- drawHPBar ยังคงอยู่เหมือนเดิม ---
     public void drawHPBar(Graphics2D g2, int x, int y, int width, int height, int currentHP, int maxHP) {
-        // คำนวณความกว้างของแถบเลือดปัจจุบัน
+        // [โค้ด drawHPBar เหมือนเดิมทุกประการ]
         double hpPercentage = (double) currentHP / maxHP;
-        // ป้องกันกรณี currentHP เป็น 0 หรือติดลบ ทำให้ hpPercentage ไม่ถูกต้อง
-        if (hpPercentage < 0) {
-            hpPercentage = 0;
-        }
+        if (hpPercentage < 0) hpPercentage = 0;
         int currentHPBarWidth = (int) (width * hpPercentage);
-
-        // วาดกรอบนอก (สีเทาเข้ม)
         g2.setColor(Color.DARK_GRAY);
         g2.fillRect(x, y, width, height);
-
-        // วาดแถบเลือดปัจจุบัน (สีแดง)
         g2.setColor(Color.RED);
         g2.fillRect(x, y, currentHPBarWidth, height);
-
-        // วาดกรอบเส้น (สีขาว)
         g2.setColor(Color.WHITE);
-        g2.setStroke(new BasicStroke(2)); // เส้นหนา 2 pixels
+        g2.setStroke(new BasicStroke(2));
         g2.drawRect(x, y, width, height);
-
-        // (ทางเลือก) แสดงตัวเลข HP บนหลอดเลือด
         g2.setFont(g2.getFont().deriveFont(Font.BOLD, 20F));
         String hpText = currentHP + "/" + maxHP;
-        int textX = x + width / 2 - (int) (g2.getFontMetrics().getStringBounds(hpText, g2).getWidth() / 2);
-        int textY = y + height / 2 + 7; // ปรับตำแหน่ง Y ให้ดูดี
+        int textX = x + width / 2 - (int)(g2.getFontMetrics().getStringBounds(hpText, g2).getWidth() / 2);
+        int textY = y + height / 2 + 7;
         g2.setColor(Color.WHITE);
         g2.drawString(hpText, textX, textY);
     }
 
     // --- drawBattleScreen แก้ไขให้วาดเฉพาะกล่องคำสั่ง ---
-    public void drawBattleScreen(Graphics2D g2, Knight knight, Slime slime) { // <--- เพิ่ม g2 ตรงนี้
-        // --- ลบบรรทัดนี้ออก (ถ้ายังมี) ---
-        // this.g2 = g2;
+    public void drawBattleScreen(Graphics2D g2, Knight knight, Slime slime) {
+        // ** ลบส่วนวาด HP Bar และ ชื่อ ออกจากตรงนี้ **
+        // drawHPBar(g2, 50, 50, 400, 40, knight.hp, knight.maxHp);
+        // g2.setFont(arial_40); // Reset font
+        // g2.setColor(Color.white); // Reset color
+        // g2.drawString(knight.name, 50, 40); // แสดงชื่อเหนือหลอดเลือด
+        //
+        // drawHPBar(g2, 830, 50, 400, 40, slime.hp, slime.maxHp);
+        // g2.setFont(arial_40); // Reset font
+        // g2.setColor(Color.white); // Reset color
+        // g2.drawString(slime.name, 830, 40);
 
-        // --- โค้ดที่เหลือเหมือนเดิม แต่ใช้ g2 ที่รับเข้ามา ---
-        g2.setColor(new Color(0, 0, 0, 150)); // ใช้ g2 ตรงๆ
+        // --- เหลือไว้เฉพาะส่วนวาดกล่องคำสั่ง ---
+        g2.setColor(new Color(0, 0, 0, 150)); // สีดำโปร่งแสง
         g2.fillRoundRect(50, 500, 300, 150, 35, 35);
         g2.setColor(Color.white);
         g2.setStroke(new BasicStroke(5));
         g2.drawRoundRect(50, 500, 300, 150, 35, 35);
-        g2.setFont(arial_40);
-        g2.setColor(Color.white);
+
+        // --- วาดคำสั่ง ---
+        g2.setFont(arial_40); // Reset font สำหรับวาดคำสั่ง
+        g2.setColor(Color.white); // Reset color
         g2.drawString("Attack", 75, 560);
-        if (commandNum == 0) {
-            g2.drawString(">", 50, 560);
-        }
+        if (commandNum == 0) g2.drawString(">", 50, 560); // แสดงลูกศรชี้
         g2.drawString("Skip", 75, 610);
-        if (commandNum == 1) {
-            g2.drawString(">", 50, 610);
-        }
+        if (commandNum == 1) g2.drawString(">", 50, 610);
     }
 
     // --- drawAttackQTE เหมือนเดิม ---
