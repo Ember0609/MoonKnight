@@ -113,12 +113,6 @@ public class GamePanel extends JPanel implements Runnable {
 
     // --- จัดการ Battle State Machine ใหม่ทั้งหมด ---
     public void handleBattle() {
-        // ใช้ currentCharacterEnemy แทน slime ใน logic ส่วนใหญ่
-        if (currentCharacterEnemy == null || !currentCharacterEnemy.isAlive()) {
-            // ถ้าศัตรูตายแล้ว หรือไม่มีศัตรู (อาจจะบั๊ก) ให้ลองไปเช็คเงื่อนไขชนะ/แพ้
-            checkBattleEndCondition();
-            return; // หยุดการทำงานถ้าศัตรูตายแล้ว
-        }
 
         switch (battleSubState) {
             // ... (case ต่างๆ เหมือนเดิม แต่ logic ข้างในจะใช้ currentCharacterEnemy) ...
@@ -331,8 +325,33 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     private void handleBattleMessage() {
+        // รอ 1.5 วินาที
         if (System.nanoTime() - messageDisplayTime > 1500000000) {
-            checkBattleEndCondition(); // <-- เรียก method ใหม่มาเช็ค
+
+            // ถ้าข้อความคือ "Slime Defeated! (Press Enter)" 
+            if (ui.currentDialogue.equals("Slime Defeated!")) { // <-- แก้ไขข้อความตรงนี้
+                // ให้รอการกด Enter เพื่อไปต่อ
+
+                // (ย้ายโค้ดที่เคยอยู่ใน checkBattleEndCondition มาไว้ตรงนี้)
+                System.out.println("Switching to Dermoon stage...");
+                currentMapImage = map1Image;
+                currentBattleBackgroundImage = map1Image;
+                dermoon = new Dermoon();
+                currentCharacterEnemy = dermoon;
+                // อาจจะฟื้นเลือด Knight เล็กน้อย? knight.hp += 20; if(knight.hp > knight.maxHp) knight.hp = knight.maxHp;
+                gameState = playState;
+                keyH.enterPressed = false; // เคลียร์ปุ่ม
+
+            } // VVVV เพิ่ม else if นี้ VVVV
+            // ถ้าข้อความคือ "Dermoon Defeated!" (หมายถึงชนะเกม)
+            else if (ui.currentDialogue.equals("Dermoon Defeated!")) {
+                // เปลี่ยนไปหน้าจบเกมเลย
+                gameState = gameClearState;
+            } // ^^^^ สิ้นสุดส่วนที่เพิ่ม ^^^^
+            // ถ้าข้อความอื่น (เช่น Success, Miss, Hit)
+            else {
+                checkBattleEndCondition(); // <-- ไปเช็คเงื่อนไข (ซึ่งจะสลับเทิร์น)
+            }
         }
     }
 
@@ -342,33 +361,25 @@ public class GamePanel extends JPanel implements Runnable {
         } else if (!currentCharacterEnemy.isAlive()) {
             // ชนะศัตรูปัจจุบัน!
             if (currentCharacterEnemy instanceof Slime) {
-                // ชนะ Slime -> เปลี่ยนไปด่าน Dermoon
-                ui.currentDialogue = "Slime Defeated!"; // อาจจะแสดงข้อความก่อน
-                // (อาจจะรออีกแป๊บ หรือกด Enter เพื่อไปต่อ)
-                System.out.println("Switching to Dermoon stage..."); // Debug message
-                currentMapImage = map1Image;
-                currentBattleBackgroundImage = map1Image;
-                dermoon = new Dermoon(); // สร้าง Dermoon object
-                currentCharacterEnemy = dermoon; // เปลี่ยนศัตรู
-                // อาจจะฟื้นเลือด Knight เล็กน้อย? knight.hp += 20; if(knight.hp > knight.maxHp) knight.hp = knight.maxHp;
-                gameState = playState; // กลับไปฉากเดิน (เจอ Dermoon)
-            } else if (currentCharacterEnemy instanceof Dermoon) {
-                // ชนะ Dermoon -> เคลียร์เกม!
-                gameState = gameClearState;
+                // ชนะ Slime
+                ui.currentDialogue = "Slime Defeated!"; // <-- แก้ไขข้อความตรงนี้
+                messageDisplayTime = System.nanoTime();
+            } // VVVV เพิ่มโค้ดส่วนนี้กลับเข้ามา VVVV
+            else if (currentCharacterEnemy instanceof Dermoon) {
+                // ชนะ Dermoon
+                ui.currentDialogue = "Dermoon Defeated!";
+                messageDisplayTime = System.nanoTime(); // รีเซ็ตไทม์เมอร์
             }
+            // ^^^^ สิ้นสุดส่วนที่เพิ่ม ^^^^
         } else {
             // ยังไม่มีใครตาย -> สลับเทิร์น
             boolean lastActionWasPlayerAttack = ui.currentDialogue.equals("Success!") || ui.currentDialogue.equals("Miss!");
-            // boolean lastActionWasPlayerDefense = ui.currentDialogue.equals("Parry!") || ui.currentDialogue.equals("Dodge!") || ui.currentDialogue.equals("Hit!");
-
+            // ... (โค้ดส่วนที่เหลือเหมือนเดิม) ...
             if (lastActionWasPlayerAttack) {
                 battleSubState = ENEMY_TURN_START;
             } else { // if (lastActionWasPlayerDefense) {
                 battleSubState = PLAYER_TURN_START;
             }
-            // else { // กรณีอื่นๆ เช่น Skip
-            //      battleSubState = PLAYER_TURN_START;
-            // }
         }
     }
 
@@ -382,15 +393,15 @@ public class GamePanel extends JPanel implements Runnable {
             g2.drawImage(currentMapImage, 0, 0, getWidth(), getHeight(), this); // ใช้ Map ปัจจุบัน
             g2.drawImage(knight.idleImage, knight.x, knight.y, 200, 200, this);
             // วาดศัตรูปัจจุบัน
-            if (currentCharacterEnemy != null && currentCharacterEnemy.isAlive()
-                    && knight.solidArea.intersects(currentCharacterEnemy.solidArea)) {
-                gameState = battleState;
-                battleSubState = PLAYER_TURN_START;
-                // Reset ตำแหน่ง Knight และ ศัตรูปัจจุบัน
-                knight.x = knight.originalX;
-                knight.y = knight.originalY; // <-- ใช้ originalY จาก Knight
-                currentCharacterEnemy.x = currentCharacterEnemy.originalX;
-                currentCharacterEnemy.y = currentCharacterEnemy.originalY;
+            if (currentCharacterEnemy != null && currentCharacterEnemy.isAlive()) {
+                // (เราจะวาด Slime โดยใช้ slimeImage ที่โหลดไว้)
+                if (currentCharacterEnemy instanceof Slime) {
+                    g2.drawImage(slimeImage, currentCharacterEnemy.x, currentCharacterEnemy.y, 200, 200, this);
+                } // (เผื่อไว้สำหรับ Dermoon ถ้าจะให้ Dermoon เดินในฉากด้วย)
+                else if (currentCharacterEnemy instanceof Dermoon && ((Dermoon) currentCharacterEnemy).image != null) {
+                    g2.drawImage(((Dermoon) currentCharacterEnemy).image, currentCharacterEnemy.x, currentCharacterEnemy.y, 200, 200, this);
+                }
+
             }
 
         } else if (gameState == battleState && currentCharacterEnemy != null) { // เช็ค null เพิ่ม
