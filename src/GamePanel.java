@@ -188,8 +188,8 @@ public class GamePanel extends JPanel implements Runnable {
     private void handlePlayerMovingToTarget() {
         int targetX = currentCharacterEnemy.x - 100; // ใช้ตำแหน่งศัตรูปัจจุบัน
         if (knight.x < targetX) {
-            knight.x += knight.speed; 
-        }else {
+            knight.x += knight.speed;
+        } else {
             knight.x = targetX;
             knight.currentAction = "ready";
             battleSubState = PLAYER_ATTACK_QTE;
@@ -382,12 +382,15 @@ public class GamePanel extends JPanel implements Runnable {
             g2.drawImage(currentMapImage, 0, 0, getWidth(), getHeight(), this); // ใช้ Map ปัจจุบัน
             g2.drawImage(knight.idleImage, knight.x, knight.y, 200, 200, this);
             // วาดศัตรูปัจจุบัน
-            if (currentCharacterEnemy != null && currentCharacterEnemy.isAlive()) {
-                if (currentCharacterEnemy instanceof Slime) {
-                    g2.drawImage(slimeImage, currentCharacterEnemy.x, currentCharacterEnemy.y, 200, 200, this);
-                } else if (currentCharacterEnemy instanceof Dermoon && ((Dermoon) currentCharacterEnemy).image != null) {
-                    g2.drawImage(((Dermoon) currentCharacterEnemy).image, currentCharacterEnemy.x, currentCharacterEnemy.y, 200, 200, this);
-                }
+            if (currentCharacterEnemy != null && currentCharacterEnemy.isAlive()
+                    && knight.solidArea.intersects(currentCharacterEnemy.solidArea)) {
+                gameState = battleState;
+                battleSubState = PLAYER_TURN_START;
+                // Reset ตำแหน่ง Knight และ ศัตรูปัจจุบัน
+                knight.x = knight.originalX;
+                knight.y = knight.originalY; // <-- ใช้ originalY จาก Knight
+                currentCharacterEnemy.x = currentCharacterEnemy.originalX;
+                currentCharacterEnemy.y = currentCharacterEnemy.originalY;
             }
 
         } else if (gameState == battleState && currentCharacterEnemy != null) { // เช็ค null เพิ่ม
@@ -417,14 +420,15 @@ public class GamePanel extends JPanel implements Runnable {
             g2.setFont(ui.arial_40);
             g2.setColor(Color.white);
             g2.drawString(knight.name, 50, 40);
-            ui.drawHPBar(g2, 830, 50, 400, 40, slime.hp, slime.maxHp);
+            ui.drawHPBar(g2, 830, 50, 400, 40, currentCharacterEnemy.hp, currentCharacterEnemy.maxHp);
             g2.setFont(ui.arial_40);
             g2.setColor(Color.white);
-            g2.drawString(slime.name, 830, 40);
+            g2.drawString(currentCharacterEnemy.name, 830, 40);
 
             // --- วาด UI เฉพาะตาม Sub-State ---
             if (battleSubState == PLAYER_TURN_START) {
-                ui.drawBattleScreen(g2, knight, slime);
+                // ส่ง currentCharacterEnemy แทน slime
+                ui.drawBattleScreen(g2, knight, currentCharacterEnemy); // ** ต้องแก้ UI.java ให้รับ Character หรือ Cast ให้ถูก **
             }
             if (battleSubState == PLAYER_ATTACK_QTE) {
                 ui.drawAttackQTE(g2, qteBarX);
@@ -446,15 +450,15 @@ public class GamePanel extends JPanel implements Runnable {
             int textLength = (int) g2.getFontMetrics().getStringBounds(text, g2).getWidth();
             g2.drawString(text, (getWidth() - textLength) / 2, getHeight() / 2);
         } else if (gameState == gameClearState) {
-              // --- วาดฉาก Game Clear ---
-              g2.setColor(Color.BLUE); // พื้นหลังสีฟ้า
-              g2.fillRect(0, 0, getWidth(), getHeight());
-              g2.setColor(Color.WHITE);
-              g2.setFont(new Font("Arial", Font.BOLD, 80));
-              String text = "Game Clear!";
-              int textLength = (int) g2.getFontMetrics().getStringBounds(text, g2).getWidth();
-              g2.drawString(text, (getWidth() - textLength) / 2, getHeight() / 2);
-          }
+            // --- วาดฉาก Game Clear ---
+            g2.setColor(Color.BLACK); // พื้นหลังสีฟ้า
+            g2.fillRect(0, 0, getWidth(), getHeight());
+            g2.setColor(Color.WHITE);
+            g2.setFont(new Font("Arial", Font.BOLD, 80));
+            String text = "Game Clear!";
+            int textLength = (int) g2.getFontMetrics().getStringBounds(text, g2).getWidth();
+            g2.drawString(text, (getWidth() - textLength) / 2, getHeight() / 2);
+        }
 
         g2.dispose();
     }

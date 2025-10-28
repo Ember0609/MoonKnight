@@ -1,19 +1,34 @@
 import java.awt.Rectangle;
-// (อาจจะต้อง import BufferedImage ถ้าจะเพิ่ม animation)
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 
 public class Slime extends Character {
-    public int originalX, originalY; // <-- เพิ่ม originalX, originalY
+    public BufferedImage image;
+
     public String currentAction = "idle"; // idle, attacking, returning
 
     public Slime() {
-        super("Slime", 200, 50);
+        super("Slime", 25, 50);
         this.originalX = 800; // <-- เก็บตำแหน่ง X เริ่มต้น
         this.originalY = 490; // <-- เก็บตำแหน่ง Y เริ่มต้น
         this.x = originalX;
         this.y = originalY;
         this.speed = 20; // <-- กำหนดความเร็วให้ Slime ด้วย
         this.solidArea = new Rectangle(x + 16, y + 16, 90, 90);
+        loadDermoonImage();
     }
 
-    // (อาจจะเพิ่ม method updateForBattle() ถ้ามี animation)
+    public void loadDermoonImage() {
+        try {
+            image = ImageIO.read(getClass().getResourceAsStream("Picture/Slimekung.png")); //
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override // <-- เพิ่ม Override annotation
+    public void updateForBattle() {
+        // (ยังไม่มี animation)
+    }
 }

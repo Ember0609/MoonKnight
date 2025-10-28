@@ -1,20 +1,21 @@
-import java.awt.Rectangle; // import Rectangle
+import java.awt.Rectangle;
 
 public class Character {
     public String name;
     public int hp;
-    public int maxHp; // <-- เพิ่มตัวแปรนี้
+    public int maxHp;
     public int atk;
-    public int x, y; // เพิ่ม x, y มาไว้ที่คลาสแม่เลย
-    public int speed; // เพิ่ม speed มาไว้ที่คลาสแม่ด้วย
-
-    public Rectangle solidArea; // Hitbox ของตัวละคร
+    public int x, y;
+    public int speed;
+    public Rectangle solidArea;
+    public int originalX, originalY; // <-- **เพิ่มประกาศตรงนี้**
 
     public Character(String name, int hp, int atk) {
         this.name = name;
         this.maxHp = hp;
         this.hp = hp;
         this.atk = atk;
+        // **ไม่ต้องกำหนดค่า originalX, originalY ที่นี่**
     }
 
     
@@ -26,5 +27,9 @@ public class Character {
     public void attack(Character target) {
         System.out.println(this.name + " attacks " + target.name);
         target.hp -= this.atk;
+    }
+
+    public void updateForBattle() {
+        // คลาสลูกสามารถ override method นี้ได้
     }
 }

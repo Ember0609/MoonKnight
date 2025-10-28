@@ -9,8 +9,7 @@ public class Knight extends Character {
     public BufferedImage idleImage, readyImage, attackImage;
     public String currentAction = "idle"; // idle, ready, slashing, dodging
     public int spriteCounter = 0;
-    public int spriteNum = 1;
-    public int originalX, originalY; // <-- เพิ่ม originalY
+    public int spriteNum = 1; // <-- เพิ่ม originalY
     public int dodgeTargetX; // ตำแหน่ง X ตอนถอยหลบ
 
     public Knight() {
@@ -62,13 +61,12 @@ public class Knight extends Character {
         solidArea.y = y + 48;
     }
 
-    public void updateForBattle() {
-        // Method สำหรับอัปเดต Animation ในฉากต่อสู้
+    @Override // <-- เพิ่ม Override annotation
+    public void updateForBattle() { // แก้ไข method นี้ในคลาสแม่
         spriteCounter++;
-        // ทำให้ท่าฟันแสดงผลเร็วขึ้น
         if (currentAction.equals("slashing")) {
-            if (spriteCounter > 6) { // เปลี่ยนจาก 12 เป็น 6
-                spriteNum++; // นับ frame ไปเรื่อยๆ
+            if (spriteCounter > 6) {
+                spriteNum++;
                 spriteCounter = 0;
             }
         }

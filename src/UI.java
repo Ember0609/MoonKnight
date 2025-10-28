@@ -31,7 +31,7 @@ public class UI {
     }
 
     // --- drawBattleScreen แก้ไขให้วาดเฉพาะกล่องคำสั่ง ---
-    public void drawBattleScreen(Graphics2D g2, Knight knight, Slime slime) {
+    public void drawBattleScreen(Graphics2D g2, Knight knight, Character enemy) {
         // ** ลบส่วนวาด HP Bar และ ชื่อ ออกจากตรงนี้ **
         // drawHPBar(g2, 50, 50, 400, 40, knight.hp, knight.maxHp);
         // g2.setFont(arial_40); // Reset font

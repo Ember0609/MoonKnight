@@ -4,21 +4,19 @@ import java.io.IOException;      // เพิ่ม import นี้
 import javax.imageio.ImageIO;        // เพิ่ม import นี้
 
 public class Dermoon extends Character {
-    public BufferedImage image; // เพิ่มตัวแปรเก็บรูป
-    public int originalX, originalY;
-    public String currentAction = "idle"; // idle, etc. (เผื่อ animation ในอนาคต)
+    public BufferedImage image;
+    // --- ลบการประกาศ originalX, originalY ตรงนี้ ---
+    public String currentAction = "idle";
 
     public Dermoon() {
-        super("Dermoon", 150, 35); // ตั้งค่า HP และ ATK สูงกว่า Slime
-        this.originalX = 800; // ตำแหน่ง X เดียวกับ Slime
-        this.originalY = 490; // ตำแหน่ง Y เดียวกับ Slime
+        super("Dermoon", 150, 35); //
+        // --- กำหนดค่า originalX, originalY ที่นี่ ---
+        this.originalX = 800;
+        this.originalY = 460;
         this.x = originalX;
         this.y = originalY;
-        this.speed = 15; // อาจจะเร็วกว่า Slime?
-        // ปรับ Hitbox ให้เหมาะกับ Dermoon (อาจจะต้องลองปรับค่า)
-        this.solidArea = new Rectangle(x + 32, y + 16, 64, 112);
-
-        // โหลดรูปภาพ Dermoon
+        this.speed = 15; //
+        this.solidArea = new Rectangle(x + 32, y + 16, 64, 112); //
         loadDermoonImage();
     }
 
@@ -30,7 +28,8 @@ public class Dermoon extends Character {
         }
     }
 
+    @Override // <-- เพิ่ม Override annotation
     public void updateForBattle() {
-        // (ยังว่างไว้ก่อน เผื่อ animation)
+        // (ยังไม่มี animation)
     }
 }
