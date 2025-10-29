@@ -4,20 +4,14 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 public class Knight extends Character {
-
     public BufferedImage idleImage, readyImage, attackImage;
     public BufferedImage[] walkImages = new BufferedImage[3];
-
     public String currentAction = "idle";
-    public int spriteCounter = 0; // สำหรับท่าฟัน (slashing)
-    public int spriteNum = 1;     // สำหรับท่าฟัน (slashing)
-
+    public int spriteCounter = 0;
+    public int spriteNum = 1;    
     public int walkSpriteCounter = 0;
-    public int walkSpriteNum = 0; // เริ่มจากเฟรม 0
-
+    public int walkSpriteNum = 0;
     public int dodgeTargetX;
-
-    // +++ เพิ่มตัวแปร walkSpeed +++
     public int walkSpeed;
 
     public Knight() {
@@ -27,9 +21,8 @@ public class Knight extends Character {
         this.dodgeTargetX = originalX - 80;
         this.x = originalX;
         this.y = originalY;
-        this.speed = 30; // ความเร็วเดิม (อาจใช้ใน Battle หรืออื่นๆ)
-        // +++ กำหนดค่า walkSpeed +++
-        this.walkSpeed = 8; // ความเร็วตอนเดินสำรวจโลก (ปรับค่าได้ตามต้องการ)
+        this.speed = 30; 
+        this.walkSpeed = 8; 
         this.solidArea = new Rectangle(x + 48, y + 48, 50, 50);
         loadKnightImages();
     }
@@ -96,7 +89,7 @@ public class Knight extends Character {
             if (spriteCounter > 6) {
                 spriteNum++;
                 if (spriteNum > 1) {
-                    // spriteNum = 1; // อาจจะรีเซ็ตเลยก็ได้
+    
                 }
                 spriteCounter = 0;
             }

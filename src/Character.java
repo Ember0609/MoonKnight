@@ -1,15 +1,17 @@
 import java.awt.Rectangle;
-import java.awt.image.BufferedImage; // +++ เพิ่ม Import +++
+import java.awt.image.BufferedImage;
 
-public class Character {
-    public String name;
-    public int hp;
-    public int maxHp;
-    public int atk;
-    public int x, y;
-    public int speed;
-    public Rectangle solidArea;
-    public int originalX, originalY;
+public abstract class Character {
+    
+    private String name;
+    private int hp;
+    private int maxHp;
+    private int atk;
+
+    protected int x, y;
+    protected int speed;
+    protected Rectangle solidArea;
+    protected int originalX, originalY;
 
     public Character(String name, int hp, int atk) {
         this.name = name;
@@ -18,31 +20,47 @@ public class Character {
         this.atk = atk;
     }
 
+    public String getName() { return this.name; }
+    public int getHp() { return this.hp; }
+    public int getMaxHp() { return this.maxHp; }
+    public int getAtk() { return this.atk; }
+
+
+    public void setHp(int value) {
+        if (value < 0) {
+            this.hp = 0;
+        } else if (value > this.maxHp) {
+            this.hp = this.maxHp;
+        } else {
+            this.hp = value;
+        }
+    }
+
+    public void takeDamage(int damage) {
+        this.hp -= damage;
+        if (this.hp < 0) {
+            this.hp = 0;
+        }
+    }
+
     public boolean isAlive() {
         return this.hp > 0;
     }
 
     public void attack(Character target) {
         System.out.println(this.name + " attacks " + target.name);
-        target.hp -= this.atk;
+        
+
+        target.takeDamage(this.atk);
     }
 
     public void updateForBattle() {
-        // คลาสลูกสามารถ override method นี้ได้
     }
 
-    // +++ เพิ่มเมธอดสำหรับ Polymorphism (การพ้องรูป) +++
-    // 1. เมธอดสำหรับ AI
-    // GamePanel จะถูกส่งเข้ามา เพื่อให้คลาสลูกสามารถเปลี่ยน state ของเกมได้
     public void performTurn(GamePanel gp) {
-        // นี่คือท่าโจมตีพื้นฐาน (สำหรับ Slime)
         gp.battleSubState = BattleSubState.ENEMY_MOVING_TO_TARGET;
     }
 
-    // +++ เพิ่มเมธอดสำหรับ Polymorphism (การพ้องรูป) +++
-    // 2. เมธอดสำหรับวาด
-    // คืนค่า null เป็น default (คลาสลูกต้อง override)
-    public BufferedImage getCurrentImage() {
-        return null;
-    }
+  
+    public abstract BufferedImage getCurrentImage();
 }

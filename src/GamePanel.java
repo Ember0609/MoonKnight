@@ -302,7 +302,7 @@ public class GamePanel extends JPanel implements Runnable {
         } else {
             knight.x = knight.dodgeTargetX;
             if (dermoonLastStandTriggered && ui.currentDialogue.equals("Last Stand Dodge!")) {
-                currentCharacterEnemy.hp = 0;
+                currentCharacterEnemy.setHp(0);
                 battleSubState = BattleSubState.BATTLE_MESSAGE;
                 messageDisplayTime = System.nanoTime();
             } else {
@@ -431,7 +431,7 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     private void handlePlayerDefenseQTEPhink() {
-        qteBarX += 25;
+        qteBarX += 15;
         if (keyH.spacePressed) {
             phinkVisible = false;
             phinkDodgeCount--;
@@ -439,15 +439,17 @@ public class GamePanel extends JPanel implements Runnable {
             boolean dodged = (qteBarX >= phinkDodgeX && qteBarX <= phinkDodgeX + phinkDodgeWidth);
             if (parried) {
                 ui.currentDialogue = "Parry!";
-                battleSubState = BattleSubState.BATTLE_MESSAGE;
+                knight.currentAction = "slashing";
+                knight.spriteNum = 1;
+                battleSubState = BattleSubState.ENEMY_RETURNING;
             }
             else if (dodged) {
                 ui.currentDialogue = "Dodge!";
                 knight.currentAction = "dodging";
-                battleSubState = BattleSubState.BATTLE_MESSAGE;
+                battleSubState = BattleSubState.PLAYER_DODGING_BACK;
             } else {
                 ui.currentDialogue = "Hit!";
-                knight.hp -= (currentCharacterEnemy.atk / 2);
+                knight.takeDamage(currentCharacterEnemy.getAtk() / 2);
                 battleSubState = BattleSubState.BATTLE_MESSAGE;
             }
             messageDisplayTime = System.nanoTime();
@@ -459,7 +461,7 @@ public class GamePanel extends JPanel implements Runnable {
         phinkVisible = false;
         phinkDodgeCount--;
         ui.currentDialogue = "Hit!";
-        knight.hp -= (currentCharacterEnemy.atk / 2);
+        knight.takeDamage(currentCharacterEnemy.getAtk() / 2);
         battleSubState = BattleSubState.BATTLE_MESSAGE;
         messageDisplayTime = System.nanoTime();
     }
@@ -477,15 +479,14 @@ public class GamePanel extends JPanel implements Runnable {
                 }
                 return;
             } else if (ui.currentDialogue.equals("Last Stand Dodge!")) {
-                currentCharacterEnemy.hp = 0;
+                currentCharacterEnemy.setHp(0);
                 checkBattleEndCondition();
                 return;
             } else if (ui.currentDialogue.equals("Last Stand Hit!")) {
-                knight.hp = 0;
+                knight.setHp(0);
                 ((Dermoon) currentCharacterEnemy).currentAction = "zap_fire";
                 battleSubState = BattleSubState.ENEMY_RETURNING;
                 messageDisplayTime = System.nanoTime();
-                return;
             }
             if (ui.currentDialogue.equals("Slime Defeated!")) {
                 currentMapImage = map1Image;
@@ -512,7 +513,7 @@ public class GamePanel extends JPanel implements Runnable {
             } else if (currentCharacterEnemy instanceof Dermoon) {
                 if (!dermoonLastStandTriggered) {
                     dermoonLastStandTriggered = true;
-                    currentCharacterEnemy.hp = 1;
+                    currentCharacterEnemy.setHp(1);
                     ((Dermoon) currentCharacterEnemy).currentAction = "zap_charge";
                     ui.currentDialogue = "Dermoon's Last Stand!";
                     battleSubState = BattleSubState.BATTLE_MESSAGE;
@@ -568,10 +569,9 @@ public class GamePanel extends JPanel implements Runnable {
             battleSubState = BattleSubState.BATTLE_MESSAGE;
             messageDisplayTime = System.nanoTime();
         }
-    }
+    }   
 
 
-    // +++ อัปเดตเมธอด paintComponent ทั้งหมด +++
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -582,13 +582,10 @@ public class GamePanel extends JPanel implements Runnable {
         }
         else if (gameState == GameState.PLAY) {
             g2.drawImage(currentMapImage, 0, 0, getWidth(), getHeight(), this);
-            
-            // +++ อัปเดตการวาด Knight ใน PLAY state +++
             BufferedImage knightImgPlay = knight.getCurrentImage();
             if (knightImgPlay != null) {
                 g2.drawImage(knightImgPlay, knight.x, knight.y, 200, 200, this);
             }
-            // --- จบส่วนอัปเดต ---
 
             if (currentCharacterEnemy != null && currentCharacterEnemy.isAlive()) {
                 BufferedImage enemyImgPlay = currentCharacterEnemy.getCurrentImage();
@@ -599,39 +596,39 @@ public class GamePanel extends JPanel implements Runnable {
         } 
         else if (gameState == GameState.BATTLE && currentCharacterEnemy != null) {
             g2.drawImage(currentBattleBackgroundImage, 0, 0, getWidth(), getHeight(), this);
-
-            // วาดศัตรู (Polymorphism)
-            if (currentCharacterEnemy.hp > 0) {
+            if (currentCharacterEnemy.getHp() > 0 ) {
                 BufferedImage imageToDraw = currentCharacterEnemy.getCurrentImage();
                 if (imageToDraw != null) {
                     g2.drawImage(imageToDraw, currentCharacterEnemy.x, currentCharacterEnemy.y, 200, 200, this);
                 }
             }
 
-            // วาด Phink
             if (phinkVisible) g2.drawImage(phinkImage, phinkX, phinkY, 100, 100, this);
             
-            // +++ อัปเดตการวาด Knight ใน BATTLE state (เพิ่ม Null Check) +++
             BufferedImage knightImgBattle = knight.getCurrentImage();
             if (knightImgBattle != null) {
                 g2.drawImage(knightImgBattle, knight.x, knight.y, 200, 200, this);
             }
-            // --- จบส่วนอัปเดต ---
-            
-            // วาด HP Bars
-            ui.drawHPBar(g2, 50, 50, 400, 40, knight.hp, knight.maxHp);
-            g2.setFont(ui.arial_40); g2.setColor(Color.white); g2.drawString(knight.name, 50, 40);
-            if(currentCharacterEnemy.hp > 0) ui.drawHPBar(g2, 830, 50, 400, 40, currentCharacterEnemy.hp, currentCharacterEnemy.maxHp);
-            else ui.drawHPBar(g2, 830, 50, 400, 40, 0, currentCharacterEnemy.maxHp);
-            g2.setFont(ui.arial_40); g2.setColor(Color.white); g2.drawString(currentCharacterEnemy.name, 830, 40);
-
-            // วาด UI Battle ตาม State
-            if (battleSubState == BattleSubState.PLAYER_TURN_START) ui.drawBattleScreen(g2, knight, currentCharacterEnemy);
-            if (battleSubState == BattleSubState.PLAYER_ATTACK_QTE) ui.drawAttackQTE(g2, qteBarX, attackSuccessX, attackSuccessWidth);
-            if (battleSubState == BattleSubState.PLAYER_DEFENSE_QTE) ui.drawDefenseQTE(g2, qteBarX, defenseDodgeX, defenseDodgeWidth, defenseParryX, defenseParryWidth);
-            else if (battleSubState == BattleSubState.PLAYER_DEFENSE_QTE_RUN) ui.drawDefenseQTE(g2, qteBarX, runDodgeX, runDodgeWidth, runParryX, runParryWidth);
-            else if (battleSubState == BattleSubState.PLAYER_DEFENSE_QTE_PHINK) ui.drawDefenseQTE(g2, qteBarX, phinkDodgeX, phinkDodgeWidth, phinkParryX, phinkParryWidth);
-            else if (battleSubState == BattleSubState.ENEMY_LAST_STAND_QTE) ui.drawDefenseQTE(g2, qteBarX, lastStandDodgeX, lastStandDodgeWidth, lastStandParryX, lastStandParryWidth);
+            ui.drawHPBar(g2, 50, 50, 400, 40, knight.getHp(), knight.getMaxHp());
+            g2.setFont(ui.arial_40); g2.setColor(Color.white); g2.drawString(knight.getName(), 50, 40);
+            if(currentCharacterEnemy.getHp() > 0) { // <-- ใช้ Getter
+                ui.drawHPBar(g2, 830, 50, 400, 40, currentCharacterEnemy.getHp(), currentCharacterEnemy.getMaxHp());
+            } else {
+                ui.drawHPBar(g2, 830, 50, 400, 40, 0, currentCharacterEnemy.getMaxHp());
+            }
+            g2.setFont(ui.arial_40); g2.setColor(Color.white); g2.drawString(currentCharacterEnemy.getName(), 830, 40);
+            if (battleSubState == BattleSubState.PLAYER_TURN_START) 
+                ui.drawBattleScreen(g2, knight, currentCharacterEnemy);
+            if (battleSubState == BattleSubState.PLAYER_ATTACK_QTE) 
+                ui.drawAttackQTE(g2, qteBarX, attackSuccessX, attackSuccessWidth);
+            if (battleSubState == BattleSubState.PLAYER_DEFENSE_QTE) 
+                ui.drawDefenseQTE(g2, qteBarX, defenseDodgeX, defenseDodgeWidth, defenseParryX, defenseParryWidth);
+            else if (battleSubState == BattleSubState.PLAYER_DEFENSE_QTE_RUN) 
+                ui.drawDefenseQTE(g2, qteBarX, runDodgeX, runDodgeWidth, runParryX, runParryWidth);
+            else if (battleSubState == BattleSubState.PLAYER_DEFENSE_QTE_PHINK) 
+                ui.drawDefenseQTE(g2, qteBarX, phinkDodgeX, phinkDodgeWidth, phinkParryX, phinkParryWidth);
+            else if (battleSubState == BattleSubState.ENEMY_LAST_STAND_QTE) 
+                ui.drawDefenseQTE(g2, qteBarX, lastStandDodgeX, lastStandDodgeWidth, lastStandParryX, lastStandParryWidth);
             if (battleSubState == BattleSubState.BATTLE_MESSAGE) ui.drawBattleMessage(g2);
 
         } else if (gameState == GameState.GAME_OVER) {

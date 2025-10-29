@@ -76,19 +76,19 @@ public class UI {
     public void drawBattleScreen(Graphics2D g2, Knight knight, Character enemy) {
         /* ... โค้ดเดิม ... */
         g2.setColor(new Color(0, 0, 0, 150));
-        g2.fillRoundRect(50, 500, 300, 150, 35, 35);
+        g2.fillRoundRect(50, 300, 300, 150, 35, 35);
         g2.setColor(Color.white);
         g2.setStroke(new BasicStroke(5));
-        g2.drawRoundRect(50, 500, 300, 150, 35, 35);
+        g2.drawRoundRect(50, 300, 300, 150, 35, 35);
         g2.setFont(arial_40);
         g2.setColor(Color.white);
-        g2.drawString("Attack", 75, 560);
+        g2.drawString("Attack", 75, 360);
         if (commandNum == 0) {
-            g2.drawString(">", 50, 560);
+            g2.drawString(">", 50, 360);
         
-        }g2.drawString("Skip", 75, 610);
+        }g2.drawString("Skip", 75, 410);
         if (commandNum == 1) {
-            g2.drawString(">", 50, 610);
+            g2.drawString(">", 50, 410);
         }
     }
 

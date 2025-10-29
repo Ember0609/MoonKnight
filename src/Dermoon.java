@@ -8,12 +8,12 @@ public class Dermoon extends Character {
     public BufferedImage runImage;
     public BufferedImage runReadyImage;
     public BufferedImage[] phinkAnim = new BufferedImage[4];
-    public BufferedImage[] zapAnim = new BufferedImage[3];
+    public BufferedImage[] zap = new BufferedImage[3];
     public String currentAction = "idle";
     public int spriteCounter = 0;
 
     public Dermoon() {
-        super("Dermoon", 125, 35);
+        super("Dermoon", 200, 50);
         this.originalX = 800;
         this.originalY = 460;
         this.x = originalX;
@@ -21,7 +21,6 @@ public class Dermoon extends Character {
         this.speed = 15;
         this.solidArea = new Rectangle(x + 32, y + 16, 64, 112);
         loadDermoonImage();
-        this.currentAction = "idle";
     }
 
     public void loadDermoonImage() {
@@ -40,9 +39,9 @@ public class Dermoon extends Character {
             phinkAnim[3] = phinkSheet.getSubimage(frameWidth * 3, 0, frameWidth, frameHeight);
             // 3. โหลดท่า Zap (Dermoon3.png)
             BufferedImage zapSheet = ImageIO.read(getClass().getResourceAsStream("Picture/Dermoon3.png"));
-            zapAnim[0] = zapSheet.getSubimage(0, 0, frameWidth, frameHeight);
-            zapAnim[1] = zapSheet.getSubimage(frameWidth, 0, frameWidth, frameHeight);
-            zapAnim[2] = zapSheet.getSubimage(frameWidth * 2, 0, frameWidth, frameHeight);
+            zap[0] = zapSheet.getSubimage(0, 0, frameWidth, frameHeight);
+            zap[1] = zapSheet.getSubimage(frameWidth, 0, frameWidth, frameHeight);
+            zap[2] = zapSheet.getSubimage(frameWidth * 2, 0, frameWidth, frameHeight);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -81,12 +80,12 @@ public class Dermoon extends Character {
     @Override
     public BufferedImage getCurrentImage() {
         // ย้ายตรรกะการเลือกรูปมาจาก GamePanel
-        BufferedImage imageToDraw = zapAnim[0]; // ท่า idle เริ่มต้น
+        BufferedImage imageToDraw = zap[0]; // ท่า idle เริ่มต้น
         
         if (currentAction.equals("running")) imageToDraw = runImage;
         else if (currentAction.equals("run_ready")) imageToDraw = runReadyImage;
-        else if (currentAction.equals("zap_charge")) imageToDraw = zapAnim[1];
-        else if (currentAction.equals("zap_fire")) imageToDraw = zapAnim[2];
+        else if (currentAction.equals("zap_charge")) imageToDraw = zap[1];
+        else if (currentAction.equals("zap_fire")) imageToDraw = zap[2];
         else if (currentAction.equals("phink_charge_1")) imageToDraw = phinkAnim[1];
         else if (currentAction.equals("phink_fire_1")) imageToDraw = phinkAnim[2];
         else if (currentAction.equals("phink_charge_2")) imageToDraw = phinkAnim[3];

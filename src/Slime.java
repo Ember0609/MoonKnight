@@ -8,17 +8,17 @@ public class Slime extends Character {
     public String currentAction = "idle"; // idle, attacking, returning
 
     public Slime() {
-        super("Slime", 25, 50);
+        super("Slime", 150, 50);
         this.originalX = 800;
         this.originalY = 490;
         this.x = originalX;
         this.y = originalY;
         this.speed = 20;
         this.solidArea = new Rectangle(x + 16, y + 16, 90, 90);
-        loadDermoonImage();
+        loadSlimeImage();
     }
 
-    public void loadDermoonImage() {
+    public void loadSlimeImage() {
         try {
             image = ImageIO.read(getClass().getResourceAsStream("Picture/Slimekung.png"));
         } catch (IOException e) {

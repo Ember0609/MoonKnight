@@ -24,11 +24,11 @@ public class KeyHandler implements KeyListener {
         if (code == KeyEvent.VK_D || code == KeyEvent.VK_RIGHT) {
             rightPressed = true;
         }
-        if (code == KeyEvent.VK_ENTER) { // เพิ่มการเช็คปุ่ม Enter
+        if (code == KeyEvent.VK_ENTER) { 
             enterPressed = true;
         }
 
-         if (code == KeyEvent.VK_SPACE) { // เพิ่มการเช็คปุ่ม Spacebar
+         if (code == KeyEvent.VK_SPACE) {
             spacePressed = true;
         }
     }
@@ -49,9 +49,9 @@ public class KeyHandler implements KeyListener {
         if (code == KeyEvent.VK_D || code == KeyEvent.VK_RIGHT) {
             rightPressed = false;
         }
-        if (code == KeyEvent.VK_SPACE) { // เพิ่มการเช็คการปล่อยปุ่ม Spacebar
+        if (code == KeyEvent.VK_SPACE) { 
             spacePressed = false;
         }
-        // เราไม่ต้องเช็ค enterReleased ในตอนนี้
+    
     }
 }
