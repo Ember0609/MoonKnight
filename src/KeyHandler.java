@@ -3,9 +3,7 @@ import java.awt.event.KeyListener;
 
 public class KeyHandler implements KeyListener {
 
-    public boolean upPressed, downPressed, leftPressed, rightPressed, enterPressed ,spacePressed; // เพิ่ม enterPressed
-
-    // ... (keyTyped และ keyReleased เหมือนเดิม) ...
+    public boolean upPressed, downPressed, leftPressed, rightPressed, enterPressed ,spacePressed; 
     @Override
     public void keyTyped(KeyEvent e) {}
 
