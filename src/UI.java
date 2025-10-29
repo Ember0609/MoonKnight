@@ -1,20 +1,63 @@
+
 import java.awt.*;
 
 public class UI {
+
     Font arial_40;
-    public int commandNum = 0; // 0 = Attack, 1 = Skip
+    public int commandNum = 0; // 0 = Start (หรือ Attack), 1 = Exit (หรือ Skip)
     public String currentDialogue = "";
 
     public UI() {
         arial_40 = new Font("Arial", Font.PLAIN, 40);
     }
 
-    // --- drawHPBar ยังคงอยู่เหมือนเดิม ---
+    // +++ เพิ่มเมธอดนี้สำหรับวาด Title Screen +++
+    public void drawTitleScreen(Graphics2D g2, Image titleImage) {
+        // 1. วาด Background Image
+        g2.drawImage(titleImage, 0, 0, 1280, 720, null); // วาดให้เต็มจอ
+        g2.setFont(arial_40.deriveFont(Font.BOLD, 80F));
+        g2.setColor(Color.WHITE);
+        g2.drawString("MoonKnight", 450, 170);
+        g2.setFont(arial_40);
+         // เปลี่ยนสีตัวหนังสือเป็นขาวเพื่อให้เห็นชัด
+        // คำนวณตำแหน่ง X กลางสำหรับปุ่ม (ถ้าปุ่มในรูปไม่ได้อยู่ตรงกลาง)
+        // int buttonCenterX = 1280 / 2;
+
+        // วาด "Start" และ Selector
+        // (ปรับ Y ให้ตรงกับปุ่มในรูป)
+        g2.setColor(Color.GRAY);
+        g2.setStroke(new BasicStroke(3));
+        g2.fillOval(530, 300, 220, 100);
+        g2.fillOval(530, 440, 220, 100);
+        g2.setColor(Color.WHITE);
+        g2.drawString("Start", 600, 360); // ลองปรับ X, Y ดู
+        if (commandNum == 0) {
+            g2.drawString(">", 560, 370); // ตัวเลือก '>'
+        }
+
+        // วาด "Exit" และ Selector
+        // (ปรับ Y ให้ตรงกับปุ่มในรูป)
+        g2.drawString("Exit", 600, 500); // ลองปรับ X, Y ดู
+        if (commandNum == 1) {
+            g2.drawString(">", 560, 500); // ตัวเลือก '>'
+        }
+    }
+
+    // (เมธอดเสริม ช่วยหา X สำหรับวาง Text กลางจอ)
+    private int getXforCenteredText(Graphics2D g2, String text) {
+        int length = (int) g2.getFontMetrics().getStringBounds(text, g2).getWidth();
+        int x = 1280 / 2 - length / 2; // 1280 คือความกว้างจอ
+        return x;
+    }
+
+    // --- เมธอด drawHPBar, drawBattleScreen, drawAttackQTE, drawDefenseQTE, drawBattleMessage เหมือนเดิม ---
     public void drawHPBar(Graphics2D g2, int x, int y, int width, int height, int currentHP, int maxHP) {
-        // [โค้ด drawHPBar เหมือนเดิมทุกประการ]
+        /* ... โค้ดเดิม ... */
         double hpPercentage = (double) currentHP / maxHP;
-        if (hpPercentage < 0) hpPercentage = 0;
-        int currentHPBarWidth = (int) (width * hpPercentage);
+        if (hpPercentage < 0) {
+            hpPercentage = 0;
+        
+        }int currentHPBarWidth = (int) (width * hpPercentage);
         g2.setColor(Color.DARK_GRAY);
         g2.fillRect(x, y, width, height);
         g2.setColor(Color.RED);
@@ -24,70 +67,68 @@ public class UI {
         g2.drawRect(x, y, width, height);
         g2.setFont(g2.getFont().deriveFont(Font.BOLD, 20F));
         String hpText = currentHP + "/" + maxHP;
-        int textX = x + width / 2 - (int)(g2.getFontMetrics().getStringBounds(hpText, g2).getWidth() / 2);
+        int textX = x + width / 2 - (int) (g2.getFontMetrics().getStringBounds(hpText, g2).getWidth() / 2);
         int textY = y + height / 2 + 7;
         g2.setColor(Color.WHITE);
         g2.drawString(hpText, textX, textY);
     }
 
-    // --- drawBattleScreen แก้ไขให้วาดเฉพาะกล่องคำสั่ง ---
     public void drawBattleScreen(Graphics2D g2, Knight knight, Character enemy) {
-        // ** ลบส่วนวาด HP Bar และ ชื่อ ออกจากตรงนี้ **
-        // drawHPBar(g2, 50, 50, 400, 40, knight.hp, knight.maxHp);
-        // g2.setFont(arial_40); // Reset font
-        // g2.setColor(Color.white); // Reset color
-        // g2.drawString(knight.name, 50, 40); // แสดงชื่อเหนือหลอดเลือด
-        //
-        // drawHPBar(g2, 830, 50, 400, 40, slime.hp, slime.maxHp);
-        // g2.setFont(arial_40); // Reset font
-        // g2.setColor(Color.white); // Reset color
-        // g2.drawString(slime.name, 830, 40);
-
-        // --- เหลือไว้เฉพาะส่วนวาดกล่องคำสั่ง ---
-        g2.setColor(new Color(0, 0, 0, 150)); // สีดำโปร่งแสง
+        /* ... โค้ดเดิม ... */
+        g2.setColor(new Color(0, 0, 0, 150));
         g2.fillRoundRect(50, 500, 300, 150, 35, 35);
         g2.setColor(Color.white);
         g2.setStroke(new BasicStroke(5));
         g2.drawRoundRect(50, 500, 300, 150, 35, 35);
-
-        // --- วาดคำสั่ง ---
-        g2.setFont(arial_40); // Reset font สำหรับวาดคำสั่ง
-        g2.setColor(Color.white); // Reset color
+        g2.setFont(arial_40);
+        g2.setColor(Color.white);
         g2.drawString("Attack", 75, 560);
-        if (commandNum == 0) g2.drawString(">", 50, 560); // แสดงลูกศรชี้
-        g2.drawString("Skip", 75, 610);
-        if (commandNum == 1) g2.drawString(">", 50, 610);
+        if (commandNum == 0) {
+            g2.drawString(">", 50, 560);
+        
+        }g2.drawString("Skip", 75, 610);
+        if (commandNum == 1) {
+            g2.drawString(">", 50, 610);
+        }
     }
 
-    // --- drawAttackQTE เหมือนเดิม ---
-    public void drawAttackQTE(Graphics2D g2, int qteBarX) {
+    public void drawAttackQTE(Graphics2D g2, int qteBarX, int successZoneX, int successZoneWidth) {
+        /* ... โค้ดเดิม ... */
+        int bgX = 400, bgWidth = 500, bgY = 300, bgHeight = 50;
         g2.setColor(Color.DARK_GRAY);
-        g2.fillRect(400, 300, 500, 50);
+        g2.fillRect(bgX, bgY, bgWidth, bgHeight);
         g2.setColor(Color.GREEN);
-        g2.fillRect(680, 300, 80, 50);
+        g2.fillRect(successZoneX, bgY, successZoneWidth, bgHeight);
         g2.setColor(Color.RED);
-        g2.fillRect(qteBarX, 300, 15, 50);
+        g2.fillRect(qteBarX, bgY, 15, bgHeight);
     }
 
-    // --- drawDefenseQTE เหมือนเดิม ---
-    public void drawDefenseQTE(Graphics2D g2, int qteBarX) {
+    public void drawDefenseQTE(Graphics2D g2, int qteBarX, int dodgeZoneX, int dodgeZoneWidth, int parryZoneX, int parryZoneWidth) {
+        /* ... โค้ดเดิม ... */
+        int bgX = 400, bgWidth = 500, bgY = 300, bgHeight = 50;
         g2.setColor(Color.DARK_GRAY);
-        g2.fillRect(400, 300, 500, 50);
+        g2.fillRect(bgX, bgY, bgWidth, bgHeight);
         g2.setColor(Color.CYAN);
-        g2.fillRect(600, 300, 200, 50);
+        g2.fillRect(dodgeZoneX, bgY, dodgeZoneWidth, bgHeight);
         g2.setColor(Color.YELLOW);
-        g2.fillRect(680, 300, 80, 50);
+        g2.fillRect(parryZoneX, bgY, parryZoneWidth, bgHeight);
         g2.setColor(Color.BLUE);
-        g2.fillRect(qteBarX, 300, 15, 50);
+        g2.fillRect(qteBarX, bgY, 15, bgHeight);
     }
 
-    // --- drawBattleMessage เหมือนเดิม ---
     public void drawBattleMessage(Graphics2D g2) {
+        /* ... โค้ดเดิม ... */
+        int boxX = 400, boxWidth = 500;
+        if (currentDialogue.equals("Dermoon's Last Stand!")) {
+            boxWidth = 600;
+            boxX = 340;
+        }
         g2.setColor(new Color(0, 0, 0, 150));
-        g2.fillRoundRect(400, 200, 500, 150, 35, 35);
+        g2.fillRoundRect(boxX, 200, boxWidth, 150, 35, 35);
         g2.setColor(Color.white);
         g2.setFont(g2.getFont().deriveFont(Font.BOLD, 50F));
         int textLength = (int) g2.getFontMetrics().getStringBounds(currentDialogue, g2).getWidth();
         g2.drawString(currentDialogue, 640 - (textLength / 2), 290);
     }
-}
+
+} // ปิดคลาส UI
