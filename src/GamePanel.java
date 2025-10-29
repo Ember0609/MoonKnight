@@ -1,7 +1,6 @@
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import javax.swing.*;
-
 public class GamePanel extends JPanel implements Runnable {
 
     public GameState gameState;
@@ -48,6 +47,8 @@ public class GamePanel extends JPanel implements Runnable {
     int lastStandDodgeWidth = 70;
     int lastStandParryX = 0;
     int lastStandParryWidth = 0;
+
+    
     
     public GamePanel() {
         this.setPreferredSize(new Dimension(1280, 720));

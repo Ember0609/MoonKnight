@@ -3,5 +3,6 @@ public enum GameState {
     PLAY,
     BATTLE,
     GAME_OVER,
-    GAME_CLEAR
+    GAME_CLEAR,
+    TUTORIAL
 }

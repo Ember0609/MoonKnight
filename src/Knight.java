@@ -57,10 +57,7 @@ public class Knight extends Character {
     public void updateForWorld(KeyHandler keyH) {
         boolean isMoving = false;
 
-        if (keyH.upPressed) {
-            y -= walkSpeed;
-            isMoving = true;
-        }
+    
         if (keyH.leftPressed) {
             x -= walkSpeed;
             isMoving = true;
