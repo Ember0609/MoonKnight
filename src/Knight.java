@@ -46,7 +46,6 @@ public class Knight extends Character {
         }
     }
 
-    // +++ อัปเดตเมธอดนี้ ให้ใช้ walkSpeed +++
     public void updateForWorld(KeyHandler keyH) {
         boolean isMoving = false;
 
@@ -59,7 +58,6 @@ public class Knight extends Character {
             x += walkSpeed;
             isMoving = true;
         }
-        // --- จบส่วนที่แก้ไข ---
 
         if (isMoving) {
             currentAction = "walking";
@@ -83,7 +81,6 @@ public class Knight extends Character {
 
     @Override
     public void updateForBattle() {
-        // (ส่วนนี้เหมือนเดิม)
         spriteCounter++;
         if (currentAction.equals("slashing")) {
             if (spriteCounter > 6) {
@@ -109,7 +106,6 @@ public class Knight extends Character {
 
     @Override
     public BufferedImage getCurrentImage() {
-        // (ส่วนนี้เหมือนเดิม)
         BufferedImage imageToDraw = null;
 
         switch (currentAction) {
