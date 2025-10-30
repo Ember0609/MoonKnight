@@ -28,11 +28,10 @@ public class Slime extends Character {
 
     @Override
     public void updateForBattle() {
-        // (ยังไม่มี animation)
     }
 
     @Override
     public BufferedImage getCurrentImage() {
-        return this.image; // คืนค่ารูป Slime ที่โหลดไว้
+        return this.image; 
     }
 }
